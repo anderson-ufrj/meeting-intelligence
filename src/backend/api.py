@@ -58,9 +58,25 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Meeting Intelligence",
-    description="Two-tier meeting intelligence pipeline for Microsoft Teams transcripts.",
+    description=(
+        "Two-tier meeting intelligence pipeline for Microsoft Teams transcripts.\n\n"
+        "**Proof of Concept** built by **Anderson Henrique da Silva** for StormGeo.\n\n"
+        "## Pipeline\n\n"
+        "1. **Structured Extraction** — Claude Sonnet 4 via Instructor for decisions, "
+        "action items, topics, and open questions\n"
+        "2. **Sentiment Analysis** — BERT-based per-speaker sentiment scoring\n"
+        "3. **PII Redaction** — Presidio-powered anonymization for sensitive tiers\n"
+        "4. **Semantic Indexing** — Sentence-transformers (all-MiniLM-L6-v2) embeddings "
+        "stored in Redis for cosine-similarity search\n\n"
+        "## Stack\n\n"
+        "FastAPI, Anthropic Claude, Sentence Transformers, Redis, Presidio, Pydantic 2"
+    ),
     version=__version__,
     lifespan=lifespan,
+    contact={
+        "name": "Anderson Henrique da Silva",
+        "url": "https://github.com/anderson-ufrj",
+    },
 )
 
 app.add_middleware(
