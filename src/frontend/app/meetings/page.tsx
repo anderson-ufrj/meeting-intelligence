@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { listMeetings } from "@/lib/api";
+import { LayoutDashboard, AlertTriangle, Inbox } from "lucide-react";
 
 type MeetingSummary = {
   meeting_id: string;
@@ -45,82 +45,92 @@ export default function MeetingsPage() {
   }, []);
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-5xl space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Processed Meetings</CardTitle>
-          <CardDescription>
-            All meetings processed through the intelligence pipeline.
-          </CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <LayoutDashboard className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle>Processed Meetings</CardTitle>
+              <CardDescription>
+                All meetings processed through the intelligence pipeline.
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {loading && (
             <div className="space-y-3">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
             </div>
           )}
 
           {error && (
-            <p className="text-sm text-destructive" role="alert">
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 px-4 py-3 rounded-lg" role="alert">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
               {error}
-            </p>
-          )}
-
-          {!loading && !error && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Tier</TableHead>
-                  <TableHead className="text-right">Decisions</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                  <TableHead className="text-right">Processed</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {meetings.map((m) => (
-                  <TableRow key={m.meeting_id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/meetings/${m.meeting_id}`}
-                        className="hover:underline"
-                      >
-                        {m.title}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={m.tier === "sensitive" ? "destructive" : "secondary"}>
-                        {m.tier}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">{m.decision_count}</TableCell>
-                    <TableCell className="text-right">{m.action_count}</TableCell>
-                    <TableCell className="text-right text-muted-foreground text-sm">
-                      {new Date(m.processed_at).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {meetings.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      No meetings processed yet. Go to{" "}
-                      <Link href="/" className="underline">
-                        Process
-                      </Link>{" "}
-                      to get started.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          )}
-
-          {!loading && meetings.length > 0 && (
-            <div className="mt-4 text-xs text-muted-foreground">
-              {meetings.length} meeting{meetings.length !== 1 ? "s" : ""} stored in Redis
             </div>
+          )}
+
+          {!loading && !error && meetings.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <Inbox className="h-12 w-12 mb-3 opacity-50" />
+              <p className="text-sm font-medium">No meetings processed yet</p>
+              <p className="text-xs mt-1">
+                Go to{" "}
+                <Link href="/" className="text-primary underline">
+                  Process
+                </Link>{" "}
+                to get started.
+              </p>
+            </div>
+          )}
+
+          {!loading && !error && meetings.length > 0 && (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead className="w-24">Tier</TableHead>
+                    <TableHead className="w-24 text-right">Processed</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {meetings.map((m) => (
+                    <TableRow key={m.meeting_id} className="group">
+                      <TableCell>
+                        <Link
+                          href={`/meetings/${m.meeting_id}`}
+                          className="font-medium hover:text-primary transition-colors"
+                        >
+                          {m.title}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={m.tier === "sensitive" ? "destructive" : "secondary"}>
+                          {m.tier}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground text-sm">
+                        {new Date(m.processed_at).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              <div className="mt-4 pt-4 border-t flex items-center justify-between text-xs text-muted-foreground">
+                <span>
+                  {meetings.length} meeting{meetings.length !== 1 ? "s" : ""} in Redis
+                </span>
+                <span className="font-mono">namespace: ordinary</span>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

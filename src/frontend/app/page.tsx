@@ -17,6 +17,16 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { processTranscript } from "@/lib/api";
+import {
+  FileText,
+  Loader2,
+  CheckCircle2,
+  AlertTriangle,
+  Users,
+  ListChecks,
+  MessageSquare,
+  ClipboardList,
+} from "lucide-react";
 
 const EXAMPLE_TRANSCRIPT = `--- Microsoft Teams Meeting Transcript ---
 Meeting: Weekly Standup — Shipping Route Optimization
@@ -98,14 +108,21 @@ export default function ProcessPage() {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-5xl space-y-6">
       {/* Input */}
       <Card>
         <CardHeader>
-          <CardTitle>Process Transcript</CardTitle>
-          <CardDescription>
-            Paste a Microsoft Teams transcript to extract decisions, action items, and sentiment.
-          </CardDescription>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle>Process Transcript</CardTitle>
+              <CardDescription>
+                Paste a Microsoft Teams transcript to extract decisions, action items, and sentiment.
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-3">
@@ -120,7 +137,7 @@ export default function ProcessPage() {
               value={tier}
               onChange={(e) => setTier(e.target.value)}
               aria-label="Privacy tier"
-              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <option value="ordinary">Ordinary</option>
               <option value="sensitive">Sensitive (PII Redacted)</option>
@@ -131,24 +148,32 @@ export default function ProcessPage() {
             placeholder="Paste your Teams transcript here..."
             value={transcript}
             onChange={(e) => setTranscript(e.target.value)}
-            rows={12}
+            rows={14}
             aria-label="Meeting transcript"
-            className="font-mono text-xs"
+            className="font-mono text-xs leading-relaxed"
           />
 
-          <div className="flex gap-2">
-            <Button onClick={handleProcess} disabled={loading || !transcript.trim()}>
-              {loading ? "Processing..." : "Process Transcript"}
+          <div className="flex items-center gap-2">
+            <Button onClick={handleProcess} disabled={loading || !transcript.trim()} size="lg">
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Processing...
+                </>
+              ) : (
+                "Process Transcript"
+              )}
             </Button>
-            <Button variant="outline" onClick={loadExample}>
+            <Button variant="outline" onClick={loadExample} size="lg">
               Load Example
             </Button>
           </div>
 
           {error && (
-            <p className="text-sm text-destructive" role="alert">
+            <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 px-4 py-3 rounded-lg" role="alert">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
               {error}
-            </p>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -157,12 +182,17 @@ export default function ProcessPage() {
       {loading && (
         <Card>
           <CardHeader>
-            <Skeleton className="h-6 w-64" />
-            <Skeleton className="h-4 w-full mt-2" />
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-lg" />
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-64" />
+                <Skeleton className="h-4 w-96" />
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Skeleton className="h-8 w-80" />
-            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-10 w-80" />
+            <Skeleton className="h-40 w-full" />
           </CardContent>
         </Card>
       )}
@@ -171,27 +201,38 @@ export default function ProcessPage() {
       {result && (
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <CardTitle>{result.insights.meeting_title}</CardTitle>
-              <Badge variant={result.tier === "sensitive" ? "destructive" : "secondary"}>
-                {result.tier}
-              </Badge>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <CardTitle>{result.insights.meeting_title}</CardTitle>
+                  <Badge variant={result.tier === "sensitive" ? "destructive" : "secondary"}>
+                    {result.tier}
+                  </Badge>
+                </div>
+                <CardDescription className="mt-1">{result.insights.summary}</CardDescription>
+              </div>
             </div>
-            <CardDescription>{result.insights.summary}</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="decisions">
-              <TabsList>
-                <TabsTrigger value="decisions">
+              <TabsList className="w-full justify-start">
+                <TabsTrigger value="decisions" className="gap-1.5">
+                  <ListChecks className="h-3.5 w-3.5" />
                   Decisions ({result.insights.decisions.length})
                 </TabsTrigger>
-                <TabsTrigger value="actions">
+                <TabsTrigger value="actions" className="gap-1.5">
+                  <ClipboardList className="h-3.5 w-3.5" />
                   Actions ({result.insights.action_items.length})
                 </TabsTrigger>
-                <TabsTrigger value="sentiment">
+                <TabsTrigger value="sentiment" className="gap-1.5">
+                  <Users className="h-3.5 w-3.5" />
                   Sentiment ({result.sentiments.length})
                 </TabsTrigger>
-                <TabsTrigger value="audit">
+                <TabsTrigger value="audit" className="gap-1.5">
+                  <MessageSquare className="h-3.5 w-3.5" />
                   Audit
                 </TabsTrigger>
               </TabsList>
@@ -245,7 +286,7 @@ export default function ProcessPage() {
                       <TableRow key={i}>
                         <TableCell className="font-medium">{a.owner}</TableCell>
                         <TableCell>{a.task}</TableCell>
-                        <TableCell className="text-muted-foreground">{a.deadline || "—"}</TableCell>
+                        <TableCell className="text-muted-foreground">{a.deadline || "\u2014"}</TableCell>
                         <TableCell>
                           {a.priority && <Badge variant="outline">{a.priority}</Badge>}
                         </TableCell>
@@ -258,8 +299,8 @@ export default function ProcessPage() {
               <TabsContent value="sentiment" className="mt-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {result.sentiments.map((s, i) => (
-                    <Card key={i} className="p-4">
-                      <div className="flex items-center justify-between mb-2">
+                    <div key={i} className="rounded-lg border p-4 space-y-2">
+                      <div className="flex items-center justify-between">
                         <span className="font-medium text-sm">{s.speaker}</span>
                         <Badge
                           variant={
@@ -273,19 +314,27 @@ export default function ProcessPage() {
                           {s.overall_sentiment}
                         </Badge>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Confidence: {(s.confidence * 100).toFixed(0)}%
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all"
+                            style={{ width: `${s.confidence * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground w-10 text-right">
+                          {(s.confidence * 100).toFixed(0)}%
+                        </span>
                       </div>
                       {s.key_phrases.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
+                        <div className="flex flex-wrap gap-1 mt-1">
                           {s.key_phrases.map((p, j) => (
-                            <span key={j} className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                            <span key={j} className="text-xs bg-muted px-2 py-0.5 rounded-full">
                               {p}
                             </span>
                           ))}
                         </div>
                       )}
-                    </Card>
+                    </div>
                   ))}
                 </div>
               </TabsContent>
@@ -293,7 +342,7 @@ export default function ProcessPage() {
               <TabsContent value="audit" className="mt-4">
                 <div className="space-y-2">
                   {result.audit_log.map((entry, i) => (
-                    <div key={i} className="bg-muted p-3 rounded font-mono text-xs">
+                    <div key={i} className="bg-muted/50 border p-3 rounded-lg font-mono text-xs">
                       <pre className="whitespace-pre-wrap">{JSON.stringify(entry, null, 2)}</pre>
                     </div>
                   ))}

@@ -41,8 +41,9 @@ export default function RootLayout({
                 <main className="flex-1 p-6" role="main">
                   {children}
                 </main>
-                <footer className="border-t px-6 py-3 text-xs text-muted-foreground text-center" role="contentinfo">
-                  Architecture demonstration for StormGeo CST Shipping
+                <footer className="border-t px-6 py-3 flex items-center justify-between text-xs text-muted-foreground" role="contentinfo">
+                  <span>Architecture demonstration — Anderson Henrique da Silva</span>
+                  <span className="font-mono">FastAPI + Claude + Redis + Next.js</span>
                 </footer>
               </SidebarInset>
             </SidebarProvider>
