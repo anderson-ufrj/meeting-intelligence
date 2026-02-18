@@ -1,0 +1,57 @@
+--- Microsoft Teams Meeting Transcript ---
+Meeting: Q4 Executive Review — Strategic Decisions
+Date: 2025-01-10
+Classification: CONFIDENTIAL
+Participants: CEO (Sarah Mitchell), CFO (Robert Chen), CTO (David Berg), CHRO (Elena Petrova)
+
+[00:00:15] Sarah Mitchell: Welcome to our Q4 review. Before we start, this meeting is confidential. No notes outside this room. Let's begin with the financial overview.
+
+[00:00:35] Robert Chen: Q4 revenue is $47.3M, up 12% YoY but 5% below forecast. The main issue was the delayed launch of the premium tier in the Nordics. Customer acquisition cost increased to $340 per customer.
+
+[00:01:10] Sarah Mitchell: Why did we miss the Nordics launch?
+
+[00:01:18] David Berg: Regulatory compliance took longer than expected. The Norwegian Maritime Authority required additional certifications for our AI weather models. We're working with our legal team in Oslo to resolve this.
+
+[00:01:45] Robert Chen: The delay cost us approximately $2.8M in projected revenue.
+
+[00:02:00] Sarah Mitchell: What's our path forward?
+
+[00:02:08] David Berg: We expect approval by mid-February. I've assigned our lead compliance officer, Magnus Johansen, to fast-track the process. We have weekly calls with the authority.
+
+[00:02:35] Elena Petrova: Speaking of personnel, we have a sensitive matter. Our lead data scientist in Copenhagen has accepted an offer from a competitor. Given his access to our proprietary algorithms, we need to discuss offboarding protocols.
+
+[00:03:05] Sarah Mitchell: When is his last day?
+
+[00:03:10] Elena Petrova: Two weeks from today. I've already restricted his repository access to read-only. He'll be working on documentation only, no new code commits.
+
+[00:03:30] David Berg: We should also rotate any shared credentials he had access to.
+
+[00:03:38] Sarah Mitchell: Agreed. Elena, handle that immediately after this meeting. David, audit what repositories he accessed in the last 90 days.
+
+[00:03:55] Robert Chen: On a strategic note, I've been approached by a private equity firm interested in acquiring a minority stake. They're offering $150M at a $600M valuation. We need to decide if we engage.
+
+[00:04:30] Sarah Mitchell: This stays strictly between us four until we decide. What's your recommendation, Robert?
+
+[00:04:42] Robert Chen: The valuation is fair based on our growth trajectory. The capital would let us accelerate expansion into Asia-Pacific. However, we'd need to consider board composition changes.
+
+[00:05:05] Sarah Mitchell: Let's table this for now. I want each of you to prepare a brief on pros/cons for next week's leadership retreat. We'll make a preliminary decision then.
+
+[00:05:25] Elena Petrova: Speaking of the retreat, I've booked the venue. It's a private estate in Sognefjord. All travel arrangements are handled.
+
+[00:05:42] Sarah Mitchell: Perfect. Any other urgent matters?
+
+[00:05:50] David Berg: One more thing — we're considering a partnership with StormGeo's competitor, MeteoGroup, for data sharing in regions where we have gaps. Legal is reviewing the agreement. This could reduce our data costs by 15%.
+
+[00:06:20] Sarah Mitchell: Keep me posted on that. Let's not announce anything until contracts are signed.
+
+[00:06:32] Sarah Mitchell: To summarize: 
+- Nordics launch: David to resolve compliance by mid-February
+- Data scientist departure: Elena handles offboarding, David audits access
+- PE offer: Everyone prepares brief for retreat
+- MeteoGroup partnership: David follows up with legal
+
+Next meeting: Leadership retreat, January 17-18, Sognefjord.
+
+[00:07:15] Sarah Mitchell: Meeting adjourned. Remember — confidential.
+
+--- End of Transcript ---

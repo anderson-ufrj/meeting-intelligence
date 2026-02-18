@@ -1,0 +1,46 @@
+--- Microsoft Teams Meeting Transcript ---
+Meeting: Weekly Standup — Shipping Route Optimization
+Date: 2025-01-15
+Participants: Lars Erik Jordet, Maria Chen, Johan Berg, Aisha Patel
+
+[00:00:12] Lars Erik Jordet: Good morning everyone. Let's start with the sprint update. Johan, how's the route optimization model looking?
+
+[00:00:25] Johan Berg: The new weather integration is working well. We reduced fuel estimation error from 8.2% to 3.1% by incorporating the 72-hour wave height forecast. The model now handles North Atlantic routes much better.
+
+[00:00:58] Lars Erik Jordet: That's a significant improvement. Are we ready to push this to staging?
+
+[00:01:05] Johan Berg: Yes, but we need Maria's review on the API changes first. The new forecast endpoint requires authentication updates.
+
+[00:01:18] Maria Chen: I'll review it this afternoon. The authentication part should be straightforward since we're using the same pattern as the current weather service.
+
+[00:01:35] Aisha Patel: Quick question — when do we update the documentation? The new wave height parameter isn't in the API docs yet.
+
+[00:01:48] Lars Erik Jordet: Good catch, Aisha. Let's make that part of the Definition of Done. Johan, can you add it before staging deployment?
+
+[00:02:00] Johan Berg: Absolutely. I'll update the docs and add a code example.
+
+[00:02:12] Maria Chen: I noticed we don't have monitoring alerts for the forecast API. If it goes down, the route optimizer falls back to static data silently.
+
+[00:02:28] Lars Erik Jordet: That's a problem. Can you create an alert for API failures?
+
+[00:02:35] Maria Chen: Will do. I'll set it up in Datadog with a P2 priority.
+
+[00:02:45] Aisha Patel: What's our timeline for production deployment?
+
+[00:02:52] Lars Erik Jordet: Targeting end of next week, pending QA sign-off. Maria, can you coordinate with QA?
+
+[00:03:05] Maria Chen: Yes, I'll schedule a walkthrough with them on Thursday.
+
+[00:03:15] Lars Erik Jordet: Any blockers or concerns?
+
+[00:03:22] Johan Berg: None from my side. The model training finished overnight, so we're good to go.
+
+[00:03:32] Aisha Patel: All clear here too.
+
+[00:03:38] Lars Erik Jordet: Great. Let's wrap up. Action items: Johan updates docs and deploys to staging. Maria reviews API changes and sets up monitoring alerts, then coordinates with QA. Aisha, can you do the final sign-off on the documentation?
+
+[00:04:05] Aisha Patel: Done.
+
+[00:04:08] Lars Erik Jordet: Meeting adjourned. Thanks everyone!
+
+--- End of Transcript ---

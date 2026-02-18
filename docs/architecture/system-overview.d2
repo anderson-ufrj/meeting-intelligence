@@ -1,0 +1,112 @@
+# Meeting Intelligence - System Architecture
+
+direction: down
+
+# External inputs
+input: {
+  shape: document
+  label: |md
+    **Microsoft Teams**
+    Transcript
+  |
+}
+
+# Main system
+system: Meeting Intelligence System {
+  style.fill: "#e1f5fe"
+  style.stroke: "#01579b"
+  style.stroke-width: 2
+
+  # Tier classifier
+  classifier: {
+    shape: diamond
+    label: |md
+      **Tier**
+      **Classification**
+      Ordinary | Sensitive
+    |
+    style.fill: "#fff3e0"
+  }
+
+  # Processing pipelines
+  ordinary: Ordinary Pipeline {
+    style.fill: "#e8f5e9"
+    
+    extract: LLM Extraction
+    sentiment: BERT Sentiment
+    store: Redis Store
+    
+    extract -> sentiment -> store
+  }
+
+  sensitive: Sensitive Pipeline {
+    style.fill: "#ffebee"
+    
+    redact: PII Redaction
+    extract: LLM Extraction
+    sentiment: BERT Sentiment
+    store: Redis Store
+    audit: Audit Log
+    
+    redact -> extract -> sentiment -> store
+    store -> audit
+  }
+
+  # Classifier routes to pipelines
+  classifier -> ordinary.extract: "ordinary"
+  classifier -> sensitive.redact: "sensitive"
+}
+
+# Outputs
+outputs: {
+  dashboard: {
+    shape: rectangle
+    label: |md
+      **Dashboard**
+      Insights & Search
+    |
+    style.fill: "#f3e5f5"
+  }
+
+  search: {
+    shape: rectangle
+    label: |md
+      **Semantic Search**
+      Cross-meeting RAG
+    |
+    style.fill: "#f3e5f5"
+  }
+
+  audit: {
+    shape: cylinder
+    label: |md
+      **Audit Trail**
+      Access Logs
+    |
+    style.fill: "#fce4ec"
+  }
+}
+
+# Connections
+input -> system.classifier
+
+system.ordinary.store -> outputs.dashboard
+system.ordinary.store -> outputs.search
+
+system.sensitive.store -> outputs.dashboard: "restricted"
+system.sensitive.audit -> outputs.audit
+
+# Legend
+legend: {
+  style.fill: "#fafafa"
+  style.stroke: "#bdbdbd"
+  
+  label: |md
+    **Legend**
+    
+    🟦 System boundary
+    🟩 Ordinary tier (open)
+    🟥 Sensitive tier (restricted)
+    🟪 Output channels
+  |
+}

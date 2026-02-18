@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "meeting-intelligence"
+version = "0.1.0"
+description = "Two-tier meeting intelligence pipeline: structured extraction, sentiment analysis, and semantic search from Microsoft Teams transcripts"
+requires-python = ">=3.11"
+dependencies = [
+    "instructor>=0.4.0",
+    "openai>=1.0.0",
+    "pydantic>=2.0.0",
+    "transformers>=4.35.0",
+    "torch>=2.1.0",
+    "numpy>=1.26.0",
+    "redis[hiredis]>=5.0.0",
+    "spacy>=3.7.0",
+    "presidio-analyzer>=2.2.0",
+    "presidio-anonymizer>=2.2.0",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "ruff>=0.4.0",
+    "mypy>=1.5.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
