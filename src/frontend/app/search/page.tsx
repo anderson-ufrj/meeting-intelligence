@@ -7,14 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { searchMeetings } from "@/lib/api";
+import Link from "next/link";
 import { Search, Loader2, Inbox } from "lucide-react";
 
 type SearchResult = {
   meeting_id: string;
   title: string;
   tier: string;
-  summary: string;
-  similarity: number;
+  content_preview: string;
+  score: number;
 };
 
 export default function SearchPage() {
@@ -121,20 +122,22 @@ export default function SearchPage() {
                   </div>
                   <div className="flex-1 min-w-0 space-y-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-sm">{r.title}</h3>
+                      <Link href={`/meetings/${r.meeting_id}`} className="font-semibold text-sm hover:text-primary transition-colors">
+                        {r.title}
+                      </Link>
                       <Badge
                         variant={r.tier === "sensitive" ? "destructive" : "secondary"}
                       >
                         {r.tier}
                       </Badge>
                     </div>
-                    {r.summary && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">{r.summary}</p>
+                    {r.content_preview && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">{r.content_preview}</p>
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    <div className={`text-lg font-bold font-mono ${getSimilarityColor(r.similarity)}`}>
-                      {(r.similarity * 100).toFixed(0)}%
+                    <div className={`text-lg font-bold font-mono ${getSimilarityColor(r.score)}`}>
+                      {(r.score * 100).toFixed(0)}%
                     </div>
                     <div className="text-[10px] text-muted-foreground">similarity</div>
                   </div>
