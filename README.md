@@ -37,7 +37,7 @@ flowchart TD
 
 | Layer | Technology |
 |-------|-----------|
-| LLM Extraction | Claude Sonnet 4 + Instructor + Pydantic 2 |
+| LLM Extraction | Claude Haiku 4 + Instructor + Pydantic 2 |
 | Sentiment | BERT multilingual (per-speaker) |
 | PII Redaction | Microsoft Presidio |
 | Embeddings | Sentence Transformers (all-MiniLM-L6-v2, local) |
