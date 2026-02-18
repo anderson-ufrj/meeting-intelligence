@@ -19,13 +19,16 @@ flowchart TD
     G --> I["Semantic Search\n(RAG)"]
     G -.->|sensitive only| J[("Audit Trail")]
 
-    style B fill:#fff3e0,stroke:#f57f17
-    style C fill:#e8f5e9,stroke:#2e7d32
-    style D fill:#ffebee,stroke:#c62828
-    style E fill:#ffebee,stroke:#c62828
-    style F fill:#e3f2fd,stroke:#1565c0
-    style G fill:#f3e5f5,stroke:#6a1b9a
-    style J fill:#fce4ec,stroke:#c62828
+    style A fill:#37474f,stroke:#90a4ae,color:#eceff1
+    style B fill:#e65100,stroke:#ff9800,color:#fff
+    style C fill:#1b5e20,stroke:#4caf50,color:#e8f5e9
+    style D fill:#b71c1c,stroke:#ef5350,color:#ffebee
+    style E fill:#b71c1c,stroke:#ef5350,color:#ffebee
+    style F fill:#0d47a1,stroke:#42a5f5,color:#e3f2fd
+    style G fill:#4a148c,stroke:#ab47bc,color:#f3e5f5
+    style H fill:#37474f,stroke:#90a4ae,color:#eceff1
+    style I fill:#37474f,stroke:#90a4ae,color:#eceff1
+    style J fill:#880e4f,stroke:#e91e63,color:#fce4ec
 ```
 
 > Detailed architecture, D2 diagrams, sequence diagrams, and data models in [`docs/architecture/`](docs/architecture/architecture.md).
