@@ -97,7 +97,7 @@ export default function MeetingsPage() {
                   <TableRow>
                     <TableHead>Title</TableHead>
                     <TableHead className="w-24">Tier</TableHead>
-                    <TableHead className="w-24 text-right">Processed</TableHead>
+                    <TableHead className="w-40 text-right">Processed</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -116,8 +116,8 @@ export default function MeetingsPage() {
                           {m.tier}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right text-muted-foreground text-sm">
-                        {new Date(m.processed_at).toLocaleDateString()}
+                      <TableCell className="text-right text-muted-foreground text-sm whitespace-nowrap">
+                        {new Date(m.processed_at).toLocaleString()}
                       </TableCell>
                     </TableRow>
                   ))}

@@ -163,7 +163,7 @@ export default function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{m.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(m.processed_at).toLocaleDateString()}
+                        {new Date(m.processed_at).toLocaleString()}
                       </p>
                     </div>
                     <Badge variant={m.tier === "sensitive" ? "destructive" : "secondary"} className="shrink-0">
