@@ -13,7 +13,6 @@ RUN pip install --no-cache-dir . && \
     python -m spacy download en_core_web_lg
 
 COPY examples/ examples/
-COPY public/ public/
 
 EXPOSE 8000
 
