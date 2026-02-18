@@ -38,6 +38,12 @@ export async function getTranscript(meetingId: string, tier = "ordinary") {
   return res.json();
 }
 
+export async function getStats() {
+  const res = await fetch("/api/v1/stats");
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function healthCheck() {
   const res = await fetch("/api/health");
   return res.json();

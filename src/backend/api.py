@@ -1,7 +1,9 @@
 """FastAPI application for Meeting Intelligence."""
 
+import json
 import os
 import logging
+from collections import Counter
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Optional
@@ -219,6 +221,87 @@ def get_transcript(
         raise HTTPException(404, "Transcript not found")
 
     return {"meeting_id": meeting_id, "transcript": raw}
+
+
+@app.get("/api/v1/stats")
+def get_stats():
+    """Aggregate intelligence across all meetings."""
+    if pipeline is None:
+        raise HTTPException(503, "Pipeline not initialized")
+
+    all_meetings = []
+    for tier_name, store in pipeline.stores.items():
+        meeting_ids = store.r.smembers(store._index_key())
+        for mid in meeting_ids:
+            raw = store.r.get(store._data_key(mid))
+            if raw:
+                all_meetings.append(json.loads(raw))
+
+    total = len(all_meetings)
+    if total == 0:
+        return {"total_meetings": 0}
+
+    sentiment_counts: Counter = Counter()
+    speaker_sentiments: dict = {}
+    topic_counts: Counter = Counter()
+    priority_counts: Counter = Counter()
+    total_decisions = 0
+    total_actions = 0
+    total_questions = 0
+    speakers_set: set = set()
+    tier_counts: Counter = Counter()
+
+    for m in all_meetings:
+        pm = m.get("processed_meeting", {})
+        insights = pm.get("insights", {})
+        sentiments = pm.get("sentiments", [])
+        tier_counts[pm.get("tier", "ordinary")] += 1
+
+        decisions = insights.get("decisions", [])
+        actions = insights.get("action_items", [])
+        topics = insights.get("key_topics", [])
+        questions = insights.get("open_questions", [])
+
+        total_decisions += len(decisions)
+        total_actions += len(actions)
+        total_questions += len(questions)
+
+        for t in topics:
+            topic_counts[t.get("name", "")] += 1
+
+        for a in actions:
+            p = a.get("priority", "medium")
+            if p:
+                priority_counts[p.lower()] += 1
+            owner = a.get("owner", "")
+            if owner:
+                speakers_set.add(owner)
+
+        for s in sentiments:
+            label = s.get("overall_sentiment", "neutral")
+            sentiment_counts[label] += 1
+            speaker = s.get("speaker", "Unknown")
+            speakers_set.add(speaker)
+            if speaker not in speaker_sentiments:
+                speaker_sentiments[speaker] = {"positive": 0, "neutral": 0, "negative": 0}
+            speaker_sentiments[speaker][label] = (
+                speaker_sentiments[speaker].get(label, 0) + 1
+            )
+
+    return {
+        "total_meetings": total,
+        "total_decisions": total_decisions,
+        "total_actions": total_actions,
+        "total_questions": total_questions,
+        "total_speakers": len(speakers_set),
+        "tier_breakdown": dict(tier_counts),
+        "sentiment_distribution": dict(sentiment_counts),
+        "top_topics": topic_counts.most_common(20),
+        "priority_breakdown": dict(priority_counts),
+        "speaker_sentiments": dict(
+            sorted(speaker_sentiments.items(), key=lambda x: sum(x[1].values()), reverse=True)[:15]
+        ),
+    }
 
 
 @app.delete("/api/v1/meetings/{meeting_id}")

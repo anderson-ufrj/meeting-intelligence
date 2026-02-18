@@ -29,6 +29,7 @@ const NAV_ITEMS = [
   { title: "Dashboard", href: "/dashboard", icon: Gauge },
   { title: "Process", href: "/", icon: FileText },
   { title: "Meetings", href: "/meetings", icon: LayoutDashboard },
+  { title: "Intelligence", href: "/intelligence", icon: Brain },
   { title: "Search", href: "/search", icon: Search },
 ];
 
@@ -84,21 +85,21 @@ export function AppSidebar() {
             Stack
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <div className="px-3 py-2 space-y-2 group-data-[collapsible=icon]:hidden">
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <div className="px-3 py-2 space-y-2.5 group-data-[collapsible=icon]:hidden">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                 Claude Sonnet 4
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                 Sentence Transformers
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                 Redis Vector Store
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
                 Presidio PII Redaction
               </div>
             </div>

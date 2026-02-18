@@ -11,6 +11,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/": "Process Transcript",
   "/dashboard": "Dashboard",
   "/meetings": "Meeting History",
+  "/intelligence": "Intelligence",
   "/search": "Semantic Search",
 };
 
