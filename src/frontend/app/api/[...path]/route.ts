@@ -4,7 +4,7 @@ const API_URL =
   process.env.API_URL || "http://localhost:8000";
 
 async function proxy(req: NextRequest) {
-  const path = req.nextUrl.pathname.replace(/^\/api/, "");
+  const path = req.nextUrl.pathname;
   const search = req.nextUrl.search;
   const target = `${API_URL}${path}${search}`;
 

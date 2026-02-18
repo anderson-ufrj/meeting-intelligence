@@ -74,6 +74,7 @@ app.add_middleware(
 # ── Routes ────────────────────────────────────────────────────────────
 
 @app.get("/health", response_model=HealthResponse)
+@app.get("/api/health", response_model=HealthResponse, include_in_schema=False)
 def health():
     redis_status = "disconnected"
     try:
