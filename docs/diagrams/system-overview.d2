@@ -1,0 +1,75 @@
+# Meeting Intelligence - System Architecture
+
+direction: down
+
+input: {
+  shape: document
+  label: "Microsoft Teams\nTranscript"
+}
+
+system: Meeting Intelligence System {
+  style.fill: "#e1f5fe"
+  style.stroke: "#01579b"
+  style.stroke-width: 2
+
+  classifier: {
+    shape: diamond
+    label: "Tier Classification\n(Ordinary | Sensitive)"
+    style.fill: "#fff3e0"
+  }
+
+  ordinary: Ordinary Pipeline {
+    style.fill: "#e8f5e9"
+
+    extract: "LLM Extraction\n(Instructor + Claude)"
+    sentiment: "BERT Sentiment\nAnalysis"
+    store: "Redis Vector Store\n(ordinary:*)"
+
+    extract -> sentiment -> store
+  }
+
+  sensitive: Sensitive Pipeline {
+    style.fill: "#ffebee"
+
+    redact: "PII Redaction\n(Presidio)"
+    extract: "LLM Extraction\n(Instructor + Claude)"
+    sentiment: "BERT Sentiment\nAnalysis"
+    store: "Redis Vector Store\n(sensitive:*)"
+    audit: {
+      shape: cylinder
+      label: "Audit Log"
+    }
+
+    redact -> extract -> sentiment -> store
+    store -> audit
+  }
+
+  classifier -> ordinary.extract: "ordinary"
+  classifier -> sensitive.redact: "sensitive"
+}
+
+dashboard: {
+  shape: rectangle
+  label: "Dashboard\nInsights & Analytics"
+  style.fill: "#f3e5f5"
+}
+
+search: {
+  shape: rectangle
+  label: "Semantic Search\nCross-meeting RAG"
+  style.fill: "#f3e5f5"
+}
+
+audit_trail: {
+  shape: cylinder
+  label: "Audit Trail\nAccess Logs"
+  style.fill: "#fce4ec"
+}
+
+input -> system.classifier
+
+system.ordinary.store -> dashboard
+system.ordinary.store -> search
+
+system.sensitive.store -> dashboard: "restricted"
+system.sensitive.audit -> audit_trail

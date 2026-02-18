@@ -1,0 +1,51 @@
+# Ordinary vs Sensitive Tier Comparison
+
+direction: right
+
+ordinary: Ordinary Tier {
+  style.fill: "#e8f5e9"
+  style.stroke: "#2e7d32"
+  style.stroke-width: 2
+
+  input: {
+    shape: document
+    label: "Raw Transcript"
+  }
+
+  extract: "LLM Extraction\n(direct, no redaction)"
+  sentiment: "BERT Sentiment\nAnalysis"
+  store: "Redis Store\n(shared namespace)"
+  output: "Open Dashboard\nCross-meeting Search\nBasic Logging"
+
+  input -> extract -> sentiment -> store -> output
+}
+
+sensitive: Sensitive Tier {
+  style.fill: "#ffebee"
+  style.stroke: "#c62828"
+  style.stroke-width: 2
+
+  input: {
+    shape: document
+    label: "Raw Transcript"
+  }
+
+  redact: {
+    shape: hexagon
+    style.fill: "#ffcdd2"
+    label: "PII Redaction\nNames, Emails,\nLocations, Phones"
+  }
+
+  extract: "LLM Extraction\n(on redacted text)"
+  sentiment: "BERT Sentiment\nAnalysis"
+  store: "Redis Store\n(isolated namespace)"
+  output: "RBAC Dashboard\nTier-isolated Search\nFull Audit Trail"
+  audit: {
+    shape: cylinder
+    style.fill: "#ffcdd2"
+    label: "Audit Log"
+  }
+
+  input -> redact -> extract -> sentiment -> store -> output
+  store -> audit
+}
