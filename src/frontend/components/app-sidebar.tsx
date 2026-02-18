@@ -3,12 +3,14 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import {
   FileText,
   Search,
   LayoutDashboard,
   Brain,
   Activity,
+  Gauge,
 } from "lucide-react";
 import {
   Sidebar,
@@ -24,26 +26,28 @@ import {
 } from "@/components/ui/sidebar";
 
 const NAV_ITEMS = [
-  { title: "Process", href: "/", icon: FileText, description: "Extract insights" },
-  { title: "Meetings", href: "/meetings", icon: LayoutDashboard, description: "Browse results" },
-  { title: "Search", href: "/search", icon: Search, description: "Semantic search" },
+  { title: "Dashboard", href: "/dashboard", icon: Gauge },
+  { title: "Process", href: "/", icon: FileText },
+  { title: "Meetings", href: "/meetings", icon: LayoutDashboard },
+  { title: "Search", href: "/search", icon: Search },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { resolvedTheme } = useTheme();
 
   return (
     <Sidebar collapsible="icon" aria-label="Main navigation">
       <SidebarHeader className="p-4 pb-6">
-        <Link href="/" className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary/10 shrink-0">
-            <Brain className="h-4.5 w-4.5 text-sidebar-primary" />
+        <Link href="/dashboard" className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+            <Brain className="h-4.5 w-4.5 text-primary" />
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
-            <div className="font-semibold text-sm leading-tight text-sidebar-foreground">
+            <div className="font-semibold text-sm leading-tight">
               Meeting Intelligence
             </div>
-            <div className="text-[10px] text-sidebar-foreground/50 leading-tight mt-0.5">
+            <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">
               AI-Powered Pipeline
             </div>
           </div>
@@ -52,7 +56,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-wider">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-wider">
             Pipeline
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -76,25 +80,25 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-wider">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-wider">
             Stack
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="px-3 py-2 space-y-2 group-data-[collapsible=icon]:hidden">
-              <div className="flex items-center gap-2 text-[11px] text-sidebar-foreground/60">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Claude Sonnet 4
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-sidebar-foreground/60">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Sentence Transformers
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-sidebar-foreground/60">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Redis Vector Store
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-sidebar-foreground/60">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Presidio PII Redaction
               </div>
             </div>
@@ -103,21 +107,20 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4">
-        <div className="group-data-[collapsible=icon]:hidden space-y-3">
-          <div className="flex items-center gap-2">
-            <Activity className="h-3 w-3 text-emerald-400 shrink-0" />
-            <span className="text-[10px] text-sidebar-foreground/50 uppercase tracking-wider">Powered by</span>
-          </div>
+        <div className="group-data-[collapsible=icon]:hidden space-y-2">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            Built as PoC for
+          </span>
           <Image
             src="/logo.svg"
             alt="StormGeo"
             width={100}
             height={24}
-            className="opacity-60 brightness-0 invert"
+            className={resolvedTheme === "dark" ? "opacity-70 brightness-0 invert" : "opacity-70"}
           />
         </div>
         <div className="hidden group-data-[collapsible=icon]:flex justify-center">
-          <Activity className="h-3.5 w-3.5 text-emerald-400" />
+          <Activity className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
       </SidebarFooter>
     </Sidebar>

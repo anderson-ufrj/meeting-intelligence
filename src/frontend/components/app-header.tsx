@@ -2,12 +2,14 @@
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { FontSizeToggle } from "@/components/font-size-toggle";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { usePathname } from "next/navigation";
 
 const PAGE_TITLES: Record<string, string> = {
   "/": "Process Transcript",
+  "/dashboard": "Dashboard",
   "/meetings": "Meeting History",
   "/search": "Semantic Search",
 };
@@ -32,6 +34,7 @@ export function AppHeader() {
         v0.1.0
       </Badge>
 
+      <FontSizeToggle />
       <ThemeToggle />
     </header>
   );
