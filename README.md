@@ -67,57 +67,56 @@ Two-tier meeting intelligence pipeline for Microsoft Teams transcripts.
 | Frontend | Next.js 15 + shadcn/ui |
 | Deploy | Railway |
 
-## Installation
-
-```bash
-pip install -e ".[dev]"
-python -m spacy download en_core_web_lg
-```
-
-## Configuration
-
-Create a `.env` file:
-
-```bash
-OPENAI_API_KEY=sk-...
-REDIS_URL=redis://localhost:6379
-```
-
 ## Project Structure
 
 ```
 meeting-intelligence/
-├── src/meeting_intelligence/    # Backend (Python)
-│   ├── models.py               # Pydantic schemas
-│   ├── extractor.py            # Instructor extraction
-│   ├── sentiment.py            # BERT analysis
-│   ├── vectorstore.py          # Redis + embeddings
-│   ├── pipeline.py             # Orchestrator
-│   ├── redaction.py            # PII redaction
-│   └── api.py                  # FastAPI application
-├── frontend/                    # Dashboard (Next.js)
+├── src/
+│   ├── backend/                 # Python API
+│   │   ├── api.py               # FastAPI application
+│   │   ├── models.py            # Pydantic schemas
+│   │   ├── extractor.py         # Instructor extraction
+│   │   ├── sentiment.py         # BERT analysis
+│   │   ├── vectorstore.py       # Redis + embeddings
+│   │   ├── pipeline.py          # Orchestrator
+│   │   └── redaction.py         # PII redaction
+│   └── frontend/                # Next.js dashboard
+│       ├── app/                 # App Router pages
+│       ├── components/          # UI components
+│       └── package.json
 ├── examples/                    # Transcript samples
-│   ├── ordinary/               # Ordinary tier examples
-│   └── sensitive/              # Sensitive tier examples
 ├── docs/                        # Documentation
-│   ├── architecture/           # D2 diagrams
-│   ├── features/               # Feature specs
-│   ├── api/                    # API specification
-│   ├── deployment/             # Railway deployment
-│   └── decisions/              # ADRs
 ├── Dockerfile                   # Backend container
-└── pyproject.toml              # Python config
+└── pyproject.toml               # Python config
+```
+
+## Quick Start
+
+```bash
+# Backend
+pip install -e ".[dev]"
+python -m spacy download en_core_web_lg
+uvicorn backend.api:app --reload
+
+# Frontend
+cd src/frontend
+npm install && npm run dev
+```
+
+## Configuration
+
+```bash
+# .env
+OPENAI_API_KEY=sk-...
+REDIS_URL=redis://localhost:6379
 ```
 
 ## Deployment
 
-Both backend and frontend deploy to Railway with a shared Redis instance:
-
-```bash
-# Backend: FastAPI on port 8000
-# Frontend: Next.js on port 3000
-# Redis: Railway native plugin
-```
+Three services on Railway:
+- **Backend** — FastAPI on port 8000
+- **Frontend** — Next.js on port 3000
+- **Redis** — Railway native plugin
 
 ## Context
 

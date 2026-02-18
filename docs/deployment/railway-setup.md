@@ -22,11 +22,11 @@ Add Redis directly from Railway's service menu. The `REDIS_URL` variable is inje
 FROM python:3.11-slim
 WORKDIR /app
 COPY pyproject.toml .
-COPY src/ src/
+COPY src/backend/ src/backend/
 RUN pip install --no-cache-dir .
 RUN python -m spacy download en_core_web_lg
 EXPOSE 8000
-CMD ["uvicorn", "meeting_intelligence.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.api:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ### 3. Frontend (Next.js)
@@ -34,9 +34,9 @@ CMD ["uvicorn", "meeting_intelligence.api:app", "--host", "0.0.0.0", "--port", "
 ```dockerfile
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY frontend/package*.json ./
+COPY src/frontend/package*.json ./
 RUN npm ci
-COPY frontend/ .
+COPY src/frontend/ .
 RUN npm run build
 
 FROM node:20-alpine

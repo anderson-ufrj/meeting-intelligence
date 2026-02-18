@@ -4,15 +4,15 @@ import os
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from meeting_intelligence import MeetingPipeline
-from meeting_intelligence.models import MeetingTranscript, TierClassification
+from backend import MeetingPipeline
+from backend.models import MeetingTranscript, TierClassification
 
 
 console = Console()

@@ -27,8 +27,8 @@ class MeetingInsights(BaseModel):
 ## Example Usage
 
 ```python
-from meeting_intelligence import MeetingPipeline
-from meeting_intelligence.models import MeetingTranscript
+from backend import MeetingPipeline
+from backend.models import MeetingTranscript
 
 # Create transcript
 transcript = MeetingTranscript(

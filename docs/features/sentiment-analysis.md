@@ -31,7 +31,7 @@ class SentimentResult(BaseModel):
 ## Example
 
 ```python
-from meeting_intelligence.sentiment import SentimentAnalyzer
+from backend.sentiment import SentimentAnalyzer
 
 analyzer = SentimentAnalyzer()
 results = analyzer.analyze_meeting(transcript)

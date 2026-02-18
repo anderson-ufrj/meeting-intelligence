@@ -24,9 +24,9 @@ venv/
 dump.rdb
 
 # Node / Frontend
-frontend/node_modules/
-frontend/.next/
-frontend/out/
+src/frontend/node_modules/
+src/frontend/.next/
+src/frontend/out/
 
 # Logs
 *.log
