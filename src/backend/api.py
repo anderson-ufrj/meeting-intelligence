@@ -318,3 +318,40 @@ def delete_meeting(
 
     store.delete_meeting(meeting_id)
     return {"status": "deleted", "meeting_id": meeting_id}
+
+
+@app.post("/api/v1/admin/dedup")
+def deduplicate_meetings():
+    """Remove duplicate meetings, keeping only the most recent per title+tier."""
+    if pipeline is None:
+        raise HTTPException(503, "Pipeline not initialized")
+
+    removed = 0
+    kept = 0
+
+    for tier_name, store in pipeline.stores.items():
+        meeting_ids = store.r.smembers(store._index_key())
+        meetings_by_title: dict[str, list[dict]] = {}
+
+        for mid in meeting_ids:
+            raw = store.r.get(store._data_key(mid))
+            if not raw:
+                continue
+            data = json.loads(raw)
+            title = data.get("metadata", {}).get("title", "")
+            processed_at = data.get("metadata", {}).get("processed_at", "")
+            meetings_by_title.setdefault(title, []).append({
+                "meeting_id": mid,
+                "processed_at": processed_at,
+            })
+
+        for title, entries in meetings_by_title.items():
+            entries.sort(key=lambda e: e["processed_at"], reverse=True)
+            kept += 1
+            for dup in entries[1:]:
+                store.delete_meeting(dup["meeting_id"])
+                transcript_key = f"transcript:{store.namespace}:{dup['meeting_id']}"
+                store.r.delete(transcript_key)
+                removed += 1
+
+    return {"status": "deduplicated", "kept": kept, "removed": removed}
