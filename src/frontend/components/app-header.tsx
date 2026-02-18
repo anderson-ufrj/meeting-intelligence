@@ -21,17 +21,17 @@ export function AppHeader() {
 
   return (
     <header
-      className="flex h-14 items-center gap-3 border-b px-4"
+      className="sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 px-3 sm:gap-3 sm:px-4"
       role="banner"
     >
       <SidebarTrigger aria-label="Toggle sidebar" className="-ml-1" />
-      <Separator orientation="vertical" className="h-5" />
+      <Separator orientation="vertical" className="h-5 hidden sm:block" />
 
-      <div className="flex-1">
-        <h1 className="text-sm font-semibold">{title}</h1>
+      <div className="flex-1 min-w-0">
+        <h1 className="text-xs sm:text-sm font-semibold truncate">{title}</h1>
       </div>
 
-      <Badge variant="outline" className="text-[10px] font-mono font-normal hidden sm:inline-flex">
+      <Badge variant="outline" className="text-[10px] font-mono font-normal hidden md:inline-flex">
         v0.1.0
       </Badge>
 

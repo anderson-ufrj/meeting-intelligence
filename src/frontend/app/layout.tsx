@@ -38,12 +38,12 @@ export default function RootLayout({
               <AppSidebar />
               <SidebarInset>
                 <AppHeader />
-                <main className="flex-1 p-6" role="main">
+                <main className="flex-1 p-3 sm:p-6" role="main">
                   {children}
                 </main>
-                <footer className="border-t px-6 py-3 flex items-center justify-between text-xs text-muted-foreground" role="contentinfo">
+                <footer className="border-t px-3 sm:px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-muted-foreground" role="contentinfo">
                   <span>Architecture demonstration — Anderson Henrique da Silva</span>
-                  <span className="font-mono">FastAPI + Claude + Redis + Next.js</span>
+                  <span className="font-mono text-[10px] sm:text-xs">FastAPI + Claude + Redis + Next.js</span>
                 </footer>
               </SidebarInset>
             </SidebarProvider>
