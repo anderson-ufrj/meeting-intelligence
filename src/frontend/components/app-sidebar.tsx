@@ -45,11 +45,15 @@ export function AppSidebar() {
             <Brain className="h-4.5 w-4.5 text-primary" />
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
-            <div className="font-semibold text-sm leading-tight">
+            <Image
+              src="/logo.svg"
+              alt="StormGeo"
+              width={120}
+              height={30}
+              className={resolvedTheme === "dark" ? "brightness-0 invert" : ""}
+            />
+            <div className="text-[10px] text-muted-foreground leading-tight mt-1">
               Meeting Intelligence
-            </div>
-            <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">
-              AI-Powered Pipeline
             </div>
           </div>
         </Link>
@@ -115,8 +119,8 @@ export function AppSidebar() {
           <Image
             src="/logo.svg"
             alt="StormGeo"
-            width={100}
-            height={24}
+            width={140}
+            height={34}
             className={resolvedTheme === "dark" ? "opacity-70 brightness-0 invert" : "opacity-70"}
           />
         </div>
