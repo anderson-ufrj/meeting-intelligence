@@ -15,7 +15,7 @@ class MeetingExtractor:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "claude-sonnet-4-20250514",
+        model: str = "claude-haiku-4-5-20251001",
     ):
         api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
