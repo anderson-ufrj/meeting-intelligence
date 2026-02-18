@@ -39,12 +39,17 @@ export default function DashboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [h, m] = await Promise.all([
+        const [h, ord, sens] = await Promise.all([
           healthCheck().catch(() => null),
-          listMeetings().catch(() => ({ meetings: [] })),
+          listMeetings("ordinary").catch(() => ({ meetings: [] })),
+          listMeetings("sensitive").catch(() => ({ meetings: [] })),
         ]);
         setHealth(h);
-        setMeetings(m.meetings ?? []);
+        const all = [
+          ...(ord.meetings ?? []).map((m: MeetingSummary) => ({ ...m, tier: m.tier || "ordinary" })),
+          ...(sens.meetings ?? []).map((m: MeetingSummary) => ({ ...m, tier: m.tier || "sensitive" })),
+        ];
+        setMeetings(all);
       } finally {
         setLoading(false);
       }
@@ -55,7 +60,9 @@ export default function DashboardPage() {
   const isHealthy = health?.status === "healthy";
   const redisOk = health?.redis === "connected";
   const totalMeetings = meetings.length;
-  const recentMeetings = meetings.slice(-5).reverse();
+  const recentMeetings = [...meetings]
+    .sort((a, b) => new Date(b.processed_at).getTime() - new Date(a.processed_at).getTime())
+    .slice(0, 5);
 
   if (loading) {
     return (

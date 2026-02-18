@@ -33,8 +33,15 @@ export default function MeetingsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await listMeetings();
-        setMeetings(data.meetings ?? []);
+        const [ord, sens] = await Promise.all([
+          listMeetings("ordinary"),
+          listMeetings("sensitive"),
+        ]);
+        const all = [
+          ...(ord.meetings ?? []).map((m: MeetingSummary) => ({ ...m, tier: m.tier || "ordinary" })),
+          ...(sens.meetings ?? []).map((m: MeetingSummary) => ({ ...m, tier: m.tier || "sensitive" })),
+        ].sort((a, b) => new Date(b.processed_at).getTime() - new Date(a.processed_at).getTime());
+        setMeetings(all);
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : "Failed to load meetings");
       } finally {
@@ -128,7 +135,7 @@ export default function MeetingsPage() {
                 <span>
                   {meetings.length} meeting{meetings.length !== 1 ? "s" : ""} in Redis
                 </span>
-                <span className="font-mono">namespace: ordinary</span>
+                <span className="font-mono">ordinary + sensitive</span>
               </div>
             </>
           )}

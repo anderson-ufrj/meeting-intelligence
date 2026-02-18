@@ -99,7 +99,12 @@ export default function MeetingDetailPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await getMeeting(meetingId);
+        let res;
+        try {
+          res = await getMeeting(meetingId, "ordinary");
+        } catch {
+          res = await getMeeting(meetingId, "sensitive");
+        }
         setData(res);
       } catch (e: unknown) {
         setError(e instanceof Error ? e.message : "Failed to load meeting");
