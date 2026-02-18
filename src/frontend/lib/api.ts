@@ -32,6 +32,12 @@ export async function getMeeting(meetingId: string, tier = "ordinary") {
   return res.json();
 }
 
+export async function getTranscript(meetingId: string, tier = "ordinary") {
+  const res = await fetch(`/api/v1/meetings/${meetingId}/transcript?tier=${tier}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export async function healthCheck() {
   const res = await fetch("/api/health");
   return res.json();

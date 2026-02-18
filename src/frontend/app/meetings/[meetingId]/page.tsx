@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getMeeting } from "@/lib/api";
+import { getMeeting, getTranscript } from "@/lib/api";
 import {
   ArrowLeft,
   ListChecks,
@@ -25,6 +26,8 @@ import {
   HelpCircle,
   Tag,
   AlertTriangle,
+  FileText,
+  Loader2,
 } from "lucide-react";
 
 type Decision = {
@@ -89,6 +92,9 @@ export default function MeetingDetailPage() {
   const [data, setData] = useState<MeetingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [transcript, setTranscript] = useState<string | null>(null);
+  const [transcriptOpen, setTranscriptOpen] = useState(false);
+  const [transcriptLoading, setTranscriptLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -133,6 +139,31 @@ export default function MeetingDetailPage() {
   const { insights, sentiments } = data.processed_meeting;
   const { metadata } = data;
 
+  async function toggleTranscript() {
+    if (transcriptOpen) {
+      setTranscriptOpen(false);
+      return;
+    }
+    if (transcript !== null) {
+      setTranscriptOpen(true);
+      return;
+    }
+    setTranscriptLoading(true);
+    try {
+      const res = await getTranscript(meetingId, metadata.tier);
+      if (res?.transcript) {
+        setTranscript(res.transcript);
+        setTranscriptOpen(true);
+      } else {
+        setTranscript("");
+      }
+    } catch {
+      setTranscript("");
+    } finally {
+      setTranscriptLoading(false);
+    }
+  }
+
   return (
     <div className="max-w-5xl space-y-6">
       {/* Back + Title */}
@@ -169,6 +200,46 @@ export default function MeetingDetailPage() {
           <p className="text-sm leading-relaxed">{insights.summary}</p>
         </CardContent>
       </Card>
+
+      {/* Transcript toggle */}
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={toggleTranscript}
+          disabled={transcriptLoading}
+        >
+          {transcriptLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <FileText className="h-4 w-4" />
+          )}
+          {transcriptOpen ? "Hide Transcript" : "View Full Transcript"}
+        </Button>
+      </div>
+
+      {transcriptOpen && transcript !== null && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-4 w-4" /> Full Transcript
+            </CardTitle>
+            <CardDescription>Original meeting transcript as submitted</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {transcript ? (
+              <pre className="whitespace-pre-wrap text-xs leading-relaxed font-mono bg-muted p-4 rounded-lg max-h-[500px] overflow-y-auto">
+                {transcript}
+              </pre>
+            ) : (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                Transcript not available for this meeting.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Tabs */}
       <Card>

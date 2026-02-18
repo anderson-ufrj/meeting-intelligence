@@ -131,6 +131,12 @@ def process_meeting(req: ProcessRequest):
         logger.exception("Processing failed")
         raise HTTPException(500, f"Processing failed: {e}")
 
+    # Persist the original transcript alongside the processed meeting
+    store = pipeline.stores.get(tier.value)
+    if store:
+        transcript_key = f"transcript:{store.namespace}:{result.meeting_id}"
+        store.r.set(transcript_key, req.transcript)
+
     return {
         "meeting_id": result.meeting_id,
         "status": "processed",
@@ -193,6 +199,26 @@ def get_meeting(
         raise HTTPException(404, "Meeting not found")
 
     return data
+
+
+@app.get("/api/v1/meetings/{meeting_id}/transcript")
+def get_transcript(
+    meeting_id: str,
+    tier: str = Query("ordinary", pattern="^(ordinary|sensitive)$"),
+):
+    if pipeline is None:
+        raise HTTPException(503, "Pipeline not initialized")
+
+    store = pipeline.stores.get(tier)
+    if not store:
+        raise HTTPException(400, f"Unknown tier: {tier}")
+
+    transcript_key = f"transcript:{store.namespace}:{meeting_id}"
+    raw = store.r.get(transcript_key)
+    if not raw:
+        raise HTTPException(404, "Transcript not found")
+
+    return {"meeting_id": meeting_id, "transcript": raw}
 
 
 @app.delete("/api/v1/meetings/{meeting_id}")
