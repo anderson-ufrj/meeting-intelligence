@@ -9,7 +9,9 @@ RUN apt-get update && \
 COPY pyproject.toml .
 COPY src/backend/ src/backend/
 
-RUN pip install --no-cache-dir . && \
+# Install torch CPU-only first (avoids downloading 2GB of CUDA libs)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir . && \
     python -m spacy download en_core_web_lg
 
 COPY examples/ examples/

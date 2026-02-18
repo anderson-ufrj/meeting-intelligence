@@ -1,4 +1,4 @@
-"""Vector store and semantic search using Redis."""
+"""Vector store and semantic search using Redis + sentence-transformers."""
 
 import json
 import os
@@ -7,7 +7,6 @@ from dataclasses import dataclass
 
 import numpy as np
 import redis
-from openai import OpenAI
 
 from .models import ProcessedMeeting
 
@@ -24,13 +23,13 @@ class SearchResult:
 class MeetingVectorStore:
     """Store and search meeting embeddings using Redis.
 
-    Uses OpenAI text-embedding-3-small for embeddings and Redis for
-    persistence. Semantic search is performed via cosine similarity
+    Uses sentence-transformers (local, no API key needed) for embeddings
+    and Redis for persistence. Semantic search via cosine similarity
     computed in-process — works with any Redis version (no Stack required).
     """
 
-    EMBEDDING_MODEL = "text-embedding-3-small"
-    EMBEDDING_DIM = 1536
+    EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+    EMBEDDING_DIM = 384
 
     def __init__(
         self,
@@ -40,13 +39,14 @@ class MeetingVectorStore:
         self.redis_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379")
         self.namespace = namespace
         self.r = redis.from_url(self.redis_url, decode_responses=True)
-        self._openai: Optional[OpenAI] = None
+        self._model = None
 
     @property
-    def openai_client(self) -> OpenAI:
-        if self._openai is None:
-            self._openai = OpenAI()
-        return self._openai
+    def embedding_model(self):
+        if self._model is None:
+            from sentence_transformers import SentenceTransformer
+            self._model = SentenceTransformer(self.EMBEDDING_MODEL)
+        return self._model
 
     # ── Keys ──────────────────────────────────────────────────────────
 
@@ -62,11 +62,8 @@ class MeetingVectorStore:
     # ── Embeddings ────────────────────────────────────────────────────
 
     def _get_embedding(self, text: str) -> List[float]:
-        response = self.openai_client.embeddings.create(
-            model=self.EMBEDDING_MODEL,
-            input=text[:8000],
-        )
-        return response.data[0].embedding
+        embedding = self.embedding_model.encode(text[:8000], normalize_embeddings=True)
+        return embedding.tolist()
 
     @staticmethod
     def _cosine_similarity(a: List[float], b: List[float]) -> float:
@@ -96,7 +93,6 @@ class MeetingVectorStore:
             "title": meeting.insights.meeting_title,
         }
 
-        # Serialize the full processed meeting for later retrieval
         payload = {
             "document": document,
             "metadata": metadata,
@@ -109,7 +105,6 @@ class MeetingVectorStore:
         pipe.sadd(self._index_key(), meeting.meeting_id)
         pipe.execute()
 
-        # Embed & store (separate so failures are visible)
         embedding = self._get_embedding(document)
         self.r.set(self._emb_key(meeting.meeting_id), json.dumps(embedding))
 

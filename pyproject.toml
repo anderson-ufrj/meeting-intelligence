@@ -12,9 +12,9 @@ description = "Two-tier meeting intelligence pipeline: structured extraction, se
 requires-python = ">=3.11"
 dependencies = [
     "instructor>=0.4.0",
-    "openai>=1.0.0",
+    "anthropic>=0.40.0",
     "pydantic>=2.0.0",
-    "transformers>=4.35.0",
+    "sentence-transformers>=3.0.0",
     "torch>=2.1.0",
     "numpy>=1.26.0",
     "redis[hiredis]>=5.0.0",
