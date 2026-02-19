@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Sidebar and OpenAPI docs incorrectly showed "Claude Sonnet 4" instead of "Claude Haiku 4.5"
+
+## [0.2.0] - 2026-02-19
+
 ### Added
 - **Test suite** with 165 tests across three layers (unit, smoke, e2e)
-  - 114 backend unit tests covering all 8 modules (92% coverage)
+  - 114 backend unit tests covering all 8 modules (93% coverage)
   - 27 smoke tests validating endpoint responses and schemas
   - 8 end-to-end tests with fakeredis for full pipeline flows
   - 16 frontend tests (Vitest) for API client and module exports
@@ -18,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Frontend `npm test` and `npm run test:watch` scripts
 - `CHANGELOG.md` following Keep a Changelog standard
 - Updated test suite documentation in `docs/features/test-suite.md`
+
+### Fixed
+- TestClient lifespan safety: prevent app startup from overwriting mock pipelines
+- TestClient resource cleanup: use context managers to avoid thread leaks
+- Correct `mock_embedding` patch target for CI environments without cached models
 
 ## [0.1.0] - 2025-02-18
 
@@ -86,5 +96,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Performance
 - Switched LLM from Claude Sonnet to Haiku for cost optimization
 
-[unreleased]: https://github.com/anderson-ufrj/meeting-intelligence/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/anderson-ufrj/meeting-intelligence/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/anderson-ufrj/meeting-intelligence/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/anderson-ufrj/meeting-intelligence/releases/tag/v0.1.0

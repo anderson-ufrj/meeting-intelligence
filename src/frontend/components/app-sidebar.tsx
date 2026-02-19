@@ -97,7 +97,7 @@ export function AppSidebar() {
             <div className="px-3 py-2 space-y-2.5 group-data-[collapsible=icon]:hidden">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                Claude Sonnet 4
+                Claude Haiku 4.5
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
