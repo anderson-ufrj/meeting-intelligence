@@ -57,39 +57,39 @@ def mock_pipeline_for_api(sample_insights, sample_sentiments):
 
 @pytest.fixture
 def client(mock_pipeline_for_api):
-    """Create a TestClient with the pipeline already injected."""
+    """Create a TestClient with the pipeline already injected.
+
+    Patches MeetingPipeline to prevent the lifespan handler from creating
+    a real pipeline (which requires API keys and Redis).
+    """
     mock_pipe, _, _ = mock_pipeline_for_api
 
     import backend.api as api_module
-    # Inject mock pipeline
     original_pipeline = api_module.pipeline
-    api_module.pipeline = mock_pipe
 
-    # Create app without lifespan (avoids real pipeline init)
-    from fastapi import FastAPI
-    from fastapi.testclient import TestClient
+    with patch("backend.api.MeetingPipeline"):
+        with TestClient(api_module.app, raise_server_exceptions=False) as test_client:
+            api_module.pipeline = mock_pipe
+            yield test_client, mock_pipe, mock_pipeline_for_api[1], mock_pipeline_for_api[2]
 
-    client = TestClient(api_module.app, raise_server_exceptions=False)
-    yield client, mock_pipe, mock_pipeline_for_api[1], mock_pipeline_for_api[2]
-
-    # Restore
     api_module.pipeline = original_pipeline
 
 
 class TestHealth:
     def test_redis_connected(self):
         with patch("backend.api.redis.from_url") as mock_redis, \
-             patch("backend.api.os.getenv", return_value="redis://fake:6379"):
+             patch("backend.api.os.getenv", return_value="redis://fake:6379"), \
+             patch("backend.api.MeetingPipeline"):
             mock_r = MagicMock()
             mock_r.ping.return_value = True
             mock_redis.return_value = mock_r
 
             import backend.api as api_module
             original = api_module.pipeline
-            api_module.pipeline = MagicMock()
 
-            client = TestClient(api_module.app, raise_server_exceptions=False)
-            response = client.get("/health")
+            with TestClient(api_module.app, raise_server_exceptions=False) as client:
+                api_module.pipeline = MagicMock()
+                response = client.get("/health")
 
             assert response.status_code == 200
             data = response.json()
@@ -99,15 +99,16 @@ class TestHealth:
             api_module.pipeline = original
 
     def test_redis_disconnected(self):
-        with patch("backend.api.redis.from_url") as mock_redis:
+        with patch("backend.api.redis.from_url") as mock_redis, \
+             patch("backend.api.MeetingPipeline"):
             mock_redis.return_value.ping.side_effect = Exception("Connection refused")
 
             import backend.api as api_module
             original = api_module.pipeline
-            api_module.pipeline = MagicMock()
 
-            client = TestClient(api_module.app, raise_server_exceptions=False)
-            response = client.get("/health")
+            with TestClient(api_module.app, raise_server_exceptions=False) as client:
+                api_module.pipeline = MagicMock()
+                response = client.get("/health")
 
             assert response.status_code == 200
             data = response.json()
@@ -171,13 +172,14 @@ class TestProcessMeeting:
     def test_pipeline_not_ready(self):
         import backend.api as api_module
         original = api_module.pipeline
-        api_module.pipeline = None
 
-        test_client = TestClient(api_module.app, raise_server_exceptions=False)
-        response = test_client.post("/api/v1/meetings/process", json={
-            "title": "Test",
-            "transcript": "This is a sufficiently long transcript for testing.",
-        })
+        with patch("backend.api.MeetingPipeline"):
+            with TestClient(api_module.app, raise_server_exceptions=False) as test_client:
+                api_module.pipeline = None
+                response = test_client.post("/api/v1/meetings/process", json={
+                    "title": "Test",
+                    "transcript": "This is a sufficiently long transcript for testing.",
+                })
 
         assert response.status_code == 503
         api_module.pipeline = original

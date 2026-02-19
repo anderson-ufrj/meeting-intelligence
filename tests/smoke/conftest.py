@@ -13,6 +13,10 @@ from backend.models import (
     TierClassification,
 )
 
+# Reusable patch to prevent the app lifespan from creating a real MeetingPipeline
+# (which requires ANTHROPIC_API_KEY and real Redis).
+_patch_lifespan_pipeline = patch("backend.api.MeetingPipeline")
+
 
 @pytest.fixture(scope="module")
 def smoke_pipeline():
@@ -90,13 +94,18 @@ def smoke_pipeline():
 
 @pytest.fixture(scope="module")
 def smoke_client(smoke_pipeline):
-    """TestClient with injected mock pipeline."""
+    """TestClient with injected mock pipeline.
+
+    Patches MeetingPipeline to prevent the lifespan handler from creating
+    a real pipeline (which requires API keys and Redis).
+    """
     import backend.api as api_module
 
     original = api_module.pipeline
-    api_module.pipeline = smoke_pipeline
 
-    client = TestClient(api_module.app, raise_server_exceptions=False)
-    yield client
+    with _patch_lifespan_pipeline:
+        with TestClient(api_module.app, raise_server_exceptions=False) as client:
+            api_module.pipeline = smoke_pipeline
+            yield client
 
     api_module.pipeline = original

@@ -1,6 +1,7 @@
 """E2E tests — full pipeline flow with fakeredis, mock LLM, mock BERT."""
 
 from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 
@@ -192,63 +193,64 @@ class TestAPIEndToEnd:
     def test_full_api_flow(
         self, fake_redis_url, mock_llm_extractor, mock_sentiment, mock_embedding
     ):
-        from unittest.mock import patch as mock_patch
         import backend.api as api_module
         from backend.pipeline import MeetingPipeline
         from fastapi.testclient import TestClient
 
-        pipeline = MeetingPipeline(api_key="test-key", redis_url=fake_redis_url)
+        test_pipeline = MeetingPipeline(api_key="test-key", redis_url=fake_redis_url)
         original = api_module.pipeline
-        api_module.pipeline = pipeline
 
-        client = TestClient(api_module.app, raise_server_exceptions=False)
+        # Patch MeetingPipeline to prevent the lifespan from creating a second pipeline
+        with patch("backend.api.MeetingPipeline"):
+            with TestClient(api_module.app, raise_server_exceptions=False) as client:
+                api_module.pipeline = test_pipeline
 
-        # 1. Process a meeting
-        resp = client.post("/api/v1/meetings/process", json={
-            "meeting_id": "e2e_api_001",
-            "title": "API E2E Test",
-            "tier": "ordinary",
-            "transcript": "Alice: Let's discuss the deployment. Bob: Sounds good, let's plan it.",
-        })
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["meeting_id"] == "e2e_api_001"
-        assert data["status"] == "processed"
+                # 1. Process a meeting
+                resp = client.post("/api/v1/meetings/process", json={
+                    "meeting_id": "e2e_api_001",
+                    "title": "API E2E Test",
+                    "tier": "ordinary",
+                    "transcript": "Alice: Let's discuss the deployment. Bob: Sounds good, let's plan it.",
+                })
+                assert resp.status_code == 200
+                data = resp.json()
+                assert data["meeting_id"] == "e2e_api_001"
+                assert data["status"] == "processed"
 
-        # 2. List meetings — should include our meeting
-        resp = client.get("/api/v1/meetings?tier=ordinary")
-        assert resp.status_code == 200
-        meetings = resp.json()["meetings"]
-        ids = [m["meeting_id"] for m in meetings]
-        assert "e2e_api_001" in ids
+                # 2. List meetings — should include our meeting
+                resp = client.get("/api/v1/meetings?tier=ordinary")
+                assert resp.status_code == 200
+                meetings = resp.json()["meetings"]
+                ids = [m["meeting_id"] for m in meetings]
+                assert "e2e_api_001" in ids
 
-        # 3. Get specific meeting
-        resp = client.get("/api/v1/meetings/e2e_api_001?tier=ordinary")
-        assert resp.status_code == 200
-        assert resp.json()["metadata"]["meeting_id"] == "e2e_api_001"
+                # 3. Get specific meeting
+                resp = client.get("/api/v1/meetings/e2e_api_001?tier=ordinary")
+                assert resp.status_code == 200
+                assert resp.json()["metadata"]["meeting_id"] == "e2e_api_001"
 
-        # 4. Get transcript
-        resp = client.get("/api/v1/meetings/e2e_api_001/transcript?tier=ordinary")
-        assert resp.status_code == 200
-        assert "Alice" in resp.json()["transcript"]
+                # 4. Get transcript
+                resp = client.get("/api/v1/meetings/e2e_api_001/transcript?tier=ordinary")
+                assert resp.status_code == 200
+                assert "Alice" in resp.json()["transcript"]
 
-        # 5. Search
-        resp = client.get("/api/v1/meetings/search?q=deployment")
-        assert resp.status_code == 200
-        results = resp.json()["results"]
-        assert len(results) > 0
+                # 5. Search
+                resp = client.get("/api/v1/meetings/search?q=deployment")
+                assert resp.status_code == 200
+                results = resp.json()["results"]
+                assert len(results) > 0
 
-        # 6. Stats
-        resp = client.get("/api/v1/stats")
-        assert resp.status_code == 200
-        assert resp.json()["total_meetings"] >= 1
+                # 6. Stats
+                resp = client.get("/api/v1/stats")
+                assert resp.status_code == 200
+                assert resp.json()["total_meetings"] >= 1
 
-        # 7. Delete
-        resp = client.delete("/api/v1/meetings/e2e_api_001?tier=ordinary")
-        assert resp.status_code == 200
+                # 7. Delete
+                resp = client.delete("/api/v1/meetings/e2e_api_001?tier=ordinary")
+                assert resp.status_code == 200
 
-        # 8. Verify deleted
-        resp = client.get("/api/v1/meetings/e2e_api_001?tier=ordinary")
-        assert resp.status_code == 404
+                # 8. Verify deleted
+                resp = client.get("/api/v1/meetings/e2e_api_001?tier=ordinary")
+                assert resp.status_code == 404
 
         api_module.pipeline = original

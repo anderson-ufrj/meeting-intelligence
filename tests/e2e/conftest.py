@@ -110,11 +110,11 @@ def mock_presidio():
 
 @pytest.fixture
 def mock_embedding():
-    """Mock SentenceTransformer to avoid loading the model."""
+    """Mock SentenceTransformer to avoid loading the real model."""
     import numpy as np
 
-    with patch("backend.vectorstore.SentenceTransformer", create=True) as mock_st:
-        mock_model = MagicMock()
-        mock_model.encode.return_value = np.random.rand(384).astype(np.float32)
-        mock_st.return_value = mock_model
+    mock_model = MagicMock()
+    mock_model.encode.return_value = np.random.rand(384).astype(np.float32)
+
+    with patch("sentence_transformers.SentenceTransformer", return_value=mock_model):
         yield mock_model
