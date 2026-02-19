@@ -31,8 +31,20 @@ dependencies = [
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "fakeredis>=2.20.0",
+    "httpx>=0.25.0",
     "ruff>=0.4.0",
     "mypy>=1.5.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-v --tb=short"
+markers = [
+    "smoke: quick checks that the system starts and responds",
+    "e2e: end-to-end pipeline tests with fakeredis",
 ]
 
 [tool.ruff]

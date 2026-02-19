@@ -28,6 +28,11 @@ src/frontend/node_modules/
 src/frontend/.next/
 src/frontend/out/
 
+# Test / Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
 # Logs
 *.log
 
