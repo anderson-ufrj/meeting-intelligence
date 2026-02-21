@@ -8,8 +8,11 @@ async function proxy(req: NextRequest) {
   const search = req.nextUrl.search;
   const target = `${API_URL}${path}${search}`;
 
+  const contentType = req.headers.get("content-type") || "application/json";
+  const isMultipart = contentType.includes("multipart/form-data");
+
   const headers: Record<string, string> = {
-    "content-type": req.headers.get("content-type") || "application/json",
+    "content-type": contentType,
   };
 
   const init: RequestInit = {
@@ -18,7 +21,11 @@ async function proxy(req: NextRequest) {
   };
 
   if (req.method !== "GET" && req.method !== "HEAD") {
-    init.body = await req.text();
+    if (isMultipart) {
+      init.body = Buffer.from(await req.arrayBuffer());
+    } else {
+      init.body = await req.text();
+    }
   }
 
   const upstream = await fetch(target, init);

@@ -1,5 +1,6 @@
 """Tests for FastAPI endpoints (Phase 4)."""
 
+import io
 import json
 from unittest.mock import MagicMock, patch
 
@@ -287,3 +288,115 @@ class TestStats:
         assert response.status_code == 200
         data = response.json()
         assert data["total_meetings"] == 0
+
+
+class TestUploadMeeting:
+    def test_upload_vtt_success(self, client):
+        test_client, mock_pipe, ordinary_store, _ = client
+        ordinary_store.r = MagicMock()
+
+        vtt_content = (
+            b"WEBVTT\n\n"
+            b"00:00:01.000 --> 00:00:05.000\n"
+            b"<v Alice>Hello everyone</v>\n"
+        )
+
+        response = test_client.post(
+            "/api/v1/meetings/upload",
+            files={"file": ("meeting.vtt", io.BytesIO(vtt_content), "text/vtt")},
+            data={"title": "Sprint Review", "tier": "ordinary"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "processed"
+        assert data["source_format"] == "vtt"
+        assert "meeting_id" in data
+
+    def test_upload_md_success(self, client):
+        test_client, mock_pipe, ordinary_store, _ = client
+        ordinary_store.r = MagicMock()
+
+        md_content = b"# Meeting Notes\n\nAlice: Hello\nBob: Hi there"
+
+        response = test_client.post(
+            "/api/v1/meetings/upload",
+            files={"file": ("notes.md", io.BytesIO(md_content), "text/markdown")},
+            data={"title": "Team Sync", "tier": "ordinary"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["source_format"] == "md"
+
+    def test_rejects_unsupported_extension(self, client):
+        test_client, *_ = client
+
+        response = test_client.post(
+            "/api/v1/meetings/upload",
+            files={"file": ("malware.exe", io.BytesIO(b"bad"), "application/octet-stream")},
+            data={"title": "Test", "tier": "ordinary"},
+        )
+
+        assert response.status_code == 422
+        assert "Unsupported file type" in response.json()["detail"]
+
+    def test_rejects_empty_file(self, client):
+        test_client, *_ = client
+
+        response = test_client.post(
+            "/api/v1/meetings/upload",
+            files={"file": ("empty.md", io.BytesIO(b""), "text/markdown")},
+            data={"title": "Test", "tier": "ordinary"},
+        )
+
+        assert response.status_code == 422
+        assert "empty" in response.json()["detail"].lower()
+
+    def test_rejects_oversized_file(self, client):
+        test_client, *_ = client
+
+        # 11 MB file
+        big_content = b"x" * (11 * 1024 * 1024)
+
+        response = test_client.post(
+            "/api/v1/meetings/upload",
+            files={"file": ("big.md", io.BytesIO(big_content), "text/markdown")},
+            data={"title": "Test", "tier": "ordinary"},
+        )
+
+        assert response.status_code == 413
+
+    def test_uses_filename_as_fallback_title(self, client):
+        test_client, mock_pipe, ordinary_store, _ = client
+        ordinary_store.r = MagicMock()
+
+        md_content = b"Some transcript text here"
+
+        response = test_client.post(
+            "/api/v1/meetings/upload",
+            files={"file": ("my-meeting.md", io.BytesIO(md_content), "text/markdown")},
+            data={"title": "", "tier": "ordinary"},
+        )
+
+        assert response.status_code == 200
+        # Pipeline should have been called with the filename as title
+        call_args = mock_pipe.process.call_args
+        transcript_arg = call_args[0][0]
+        assert transcript_arg.title == "my-meeting.md"
+
+    def test_pipeline_not_ready(self):
+        import backend.api as api_module
+        original = api_module.pipeline
+
+        with patch("backend.api.MeetingPipeline"):
+            with TestClient(api_module.app, raise_server_exceptions=False) as test_client:
+                api_module.pipeline = None
+                response = test_client.post(
+                    "/api/v1/meetings/upload",
+                    files={"file": ("test.md", io.BytesIO(b"content"), "text/markdown")},
+                    data={"title": "Test", "tier": "ordinary"},
+                )
+
+        assert response.status_code == 503
+        api_module.pipeline = original

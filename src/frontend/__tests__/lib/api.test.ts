@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   processTranscript,
+  uploadTranscriptFile,
   searchMeetings,
   listMeetings,
   getMeeting,
@@ -52,6 +53,48 @@ describe("processTranscript", () => {
     await expect(
       processTranscript({ title: "X", tier: "ordinary", transcript: "Y" })
     ).rejects.toThrow("Bad request");
+  });
+});
+
+describe("uploadTranscriptFile", () => {
+  it("sends POST with FormData (no explicit Content-Type)", async () => {
+    const mockResponse = { meeting_id: "m1", status: "processed", source_format: "vtt" };
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    });
+
+    const file = new File(["WEBVTT\n\n00:00:01.000 --> 00:00:05.000\nHello"], "meeting.vtt", {
+      type: "text/vtt",
+    });
+
+    const result = await uploadTranscriptFile({
+      file,
+      title: "Sprint Review",
+      tier: "ordinary",
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith("/api/v1/meetings/upload", {
+      method: "POST",
+      body: expect.any(FormData),
+    });
+    // Should NOT have explicit Content-Type header (browser sets it with boundary)
+    const callArgs = mockFetch.mock.calls[0][1];
+    expect(callArgs.headers).toBeUndefined();
+    expect(result).toEqual(mockResponse);
+  });
+
+  it("throws on non-ok response", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      text: () => Promise.resolve("Unsupported file type"),
+    });
+
+    const file = new File(["bad"], "file.exe");
+
+    await expect(
+      uploadTranscriptFile({ file, title: "Test", tier: "ordinary" })
+    ).rejects.toThrow("Unsupported file type");
   });
 });
 

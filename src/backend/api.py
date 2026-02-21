@@ -10,9 +10,11 @@ from typing import Optional
 from uuid import uuid4
 
 import redis
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+
+from .parsers import ALLOWED_EXTENSIONS, MAX_FILE_SIZE, parse_file
 
 from . import __version__
 from .models import (
@@ -147,6 +149,75 @@ def process_meeting(req: ProcessRequest):
         "sentiments": [s.model_dump() for s in result.sentiments],
         "vector_id": result.vector_id,
         "audit_log": result.audit_log,
+    }
+
+
+@app.post("/api/v1/meetings/upload")
+async def upload_meeting(
+    file: UploadFile = File(...),
+    title: str = Form(""),
+    tier: str = Form("ordinary"),
+):
+    if pipeline is None:
+        raise HTTPException(503, "Pipeline not initialized")
+
+    if tier not in ("ordinary", "sensitive"):
+        raise HTTPException(422, f"Invalid tier: {tier}")
+
+    # Validate extension
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            422,
+            f"Unsupported file type: {ext}. Allowed: {', '.join(sorted(ALLOWED_EXTENSIONS))}",
+        )
+
+    content = await file.read()
+
+    if len(content) == 0:
+        raise HTTPException(422, "File is empty")
+
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(413, f"File exceeds {MAX_FILE_SIZE // (1024 * 1024)}MB limit")
+
+    try:
+        result = parse_file(content, file.filename or "file" + ext)
+    except Exception as e:
+        logger.exception("File parsing failed")
+        raise HTTPException(422, f"Failed to parse file: {e}")
+
+    effective_title = title.strip() or result.detected_title or file.filename or "Untitled"
+    meeting_id = f"meeting_{uuid4().hex[:12]}"
+    tier_enum = TierClassification(tier)
+
+    transcript = MeetingTranscript(
+        meeting_id=meeting_id,
+        title=effective_title,
+        date=datetime.utcnow(),
+        tier=tier_enum,
+        raw_text=result.text,
+    )
+
+    try:
+        processed = pipeline.process(transcript)
+    except Exception as e:
+        logger.exception("Processing failed")
+        raise HTTPException(500, f"Processing failed: {e}")
+
+    store = pipeline.stores.get(tier)
+    if store:
+        transcript_key = f"transcript:{store.namespace}:{processed.meeting_id}"
+        store.r.set(transcript_key, result.text)
+
+    return {
+        "meeting_id": processed.meeting_id,
+        "status": "processed",
+        "tier": processed.tier.value,
+        "source_format": result.format,
+        "insights": processed.insights.model_dump(),
+        "sentiments": [s.model_dump() for s in processed.sentiments],
+        "vector_id": processed.vector_id,
+        "audit_log": processed.audit_log,
     }
 
 

@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **File upload support** for `.vtt`, `.docx`, `.doc`, `.pdf`, and `.md` formats
+  - `POST /api/v1/meetings/upload` multipart endpoint with validation (extension, size, empty)
+  - `src/backend/parsers.py` module with 5 format-specific parsers and smart router
+  - VTT parser extracts `<v Speaker>` tags, merges consecutive same-speaker cues
+  - DOCX parser detects Teams transcript patterns (`Speaker  HH:MM`)
+  - DOC parser via `antiword` subprocess for legacy Word files
+  - PDF parser with page-by-page text extraction
+  - Markdown parser with YAML frontmatter extraction (title/date)
+- **Tabbed input UI** on Process page: "Paste Text" (existing) and "Upload File" (new)
+  - Drag-and-drop zone with file info display and remove button
+  - Supported formats hint and 10 MB size limit
+  - Auto-fills meeting title from filename
+- `uploadTranscriptFile()` API client function using FormData
+- `source_format` field in process response for uploaded files
+- Frontend API proxy now handles `multipart/form-data` correctly
+- 29 parser tests and 7 upload endpoint tests (backend)
+- 2 upload client tests (frontend)
+
+### Changed
+- Frontend proxy uses `arrayBuffer()` for multipart requests instead of `text()`
+- Dockerfile installs `antiword` for legacy .doc support
+
 ### Fixed
 - Sidebar and OpenAPI docs incorrectly showed "Claude Sonnet 4" instead of "Claude Haiku 4.5"
 

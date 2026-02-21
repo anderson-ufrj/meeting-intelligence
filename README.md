@@ -8,7 +8,7 @@ Two-tier meeting intelligence pipeline for Microsoft Teams transcripts. Extracts
 
 ```mermaid
 flowchart TD
-    A[/"Microsoft Teams\nTranscript"/] --> B{"Tier\nClassification"}
+    A[/"Microsoft Teams\nTranscript"/] -->|paste or upload| B{"Tier\nClassification"}
     B -->|ordinary| C["LLM Extraction\n(Instructor + Claude)"]
     B -->|sensitive| D["PII Redaction\n(Presidio)"]
     D --> E["LLM Extraction\n(Instructor + Claude)"]
@@ -72,7 +72,8 @@ cd src/frontend && npm install && npm run dev
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/v1/meetings/process` | Process transcript |
+| `POST` | `/api/v1/meetings/process` | Process transcript (JSON) |
+| `POST` | `/api/v1/meetings/upload` | Upload file (.vtt, .docx, .doc, .pdf, .md) |
 | `GET` | `/api/v1/meetings/search?q=...` | Semantic search |
 | `GET` | `/api/v1/meetings` | List meetings |
 | `GET` | `/api/v1/meetings/{id}` | Get meeting insights |

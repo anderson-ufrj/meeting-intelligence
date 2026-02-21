@@ -12,6 +12,23 @@ export async function processTranscript(data: {
   return res.json();
 }
 
+export async function uploadTranscriptFile(data: {
+  file: File;
+  title: string;
+  tier: string;
+}) {
+  const formData = new FormData();
+  formData.append("file", data.file);
+  formData.append("title", data.title);
+  formData.append("tier", data.tier);
+  const res = await fetch("/api/v1/meetings/upload", {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function searchMeetings(query: string, tier?: string) {
   const params = new URLSearchParams({ q: query });
   if (tier) params.set("tier", tier);

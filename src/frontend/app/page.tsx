@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { processTranscript } from "@/lib/api";
+import { processTranscript, uploadTranscriptFile } from "@/lib/api";
 import {
   FileText,
   Loader2,
@@ -26,6 +26,8 @@ import {
   ListChecks,
   MessageSquare,
   ClipboardList,
+  Upload,
+  X,
 } from "lucide-react";
 
 const EXAMPLE_TRANSCRIPT = `--- Microsoft Teams Meeting Transcript ---
@@ -59,9 +61,18 @@ Participants: Lars Erik Jordet, Maria Chen, Johan Berg, Aisha Patel
 
 --- End of Transcript ---`;
 
+const ACCEPTED_FILE_TYPES = ".vtt,.docx,.doc,.pdf,.md";
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 type ProcessResult = {
   meeting_id: string;
   tier: string;
+  source_format?: string;
   insights: {
     meeting_title: string;
     summary: string;
@@ -86,14 +97,22 @@ export default function ProcessPage() {
   const [result, setResult] = useState<ProcessResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [inputMode, setInputMode] = useState<"paste" | "upload">("paste");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleProcess() {
     setLoading(true);
     setError("");
     setResult(null);
     try {
-      const data = await processTranscript({ title, tier, transcript });
-      setResult(data);
+      if (inputMode === "upload" && selectedFile) {
+        const data = await uploadTranscriptFile({ file: selectedFile, title, tier });
+        setResult(data);
+      } else {
+        const data = await processTranscript({ title, tier, transcript });
+        setResult(data);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Processing failed");
     } finally {
@@ -105,7 +124,34 @@ export default function ProcessPage() {
     setTranscript(EXAMPLE_TRANSCRIPT);
     setTitle("Weekly Standup — Shipping Route Optimization");
     setTier("ordinary");
+    setInputMode("paste");
   }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      if (!title.trim() || title === "Weekly Standup — Shipping Route Optimization") {
+        setTitle(file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "));
+      }
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      if (!title.trim() || title === "Weekly Standup — Shipping Route Optimization") {
+        setTitle(file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "));
+      }
+    }
+  }
+
+  const isProcessDisabled =
+    loading ||
+    (inputMode === "paste" && !transcript.trim()) ||
+    (inputMode === "upload" && !selectedFile);
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -119,7 +165,7 @@ export default function ProcessPage() {
             <div>
               <CardTitle>Process Transcript</CardTitle>
               <CardDescription>
-                Paste a Microsoft Teams transcript to extract decisions, action items, and sentiment.
+                Paste a Microsoft Teams transcript or upload a file to extract decisions, action items, and sentiment.
               </CardDescription>
             </div>
           </div>
@@ -144,17 +190,90 @@ export default function ProcessPage() {
             </select>
           </div>
 
-          <Textarea
-            placeholder="Paste your Teams transcript here..."
-            value={transcript}
-            onChange={(e) => setTranscript(e.target.value)}
-            rows={14}
-            aria-label="Meeting transcript"
-            className="font-mono text-xs leading-relaxed"
-          />
+          {/* Input mode tabs */}
+          <Tabs value={inputMode} onValueChange={(v) => setInputMode(v as "paste" | "upload")}>
+            <TabsList>
+              <TabsTrigger value="paste" className="gap-1.5">
+                <FileText className="h-3.5 w-3.5" />
+                Paste Text
+              </TabsTrigger>
+              <TabsTrigger value="upload" className="gap-1.5">
+                <Upload className="h-3.5 w-3.5" />
+                Upload File
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="paste" className="mt-3">
+              <Textarea
+                placeholder="Paste your Teams transcript here..."
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+                rows={14}
+                aria-label="Meeting transcript"
+                className="font-mono text-xs leading-relaxed"
+              />
+            </TabsContent>
+
+            <TabsContent value="upload" className="mt-3">
+              <div
+                className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 transition-colors hover:border-muted-foreground/50"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+              >
+                {selectedFile ? (
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-8 w-8 text-primary" />
+                    <div>
+                      <p className="font-medium text-sm">{selectedFile.name}</p>
+                      <Badge variant="outline" className="mt-1">
+                        {formatFileSize(selectedFile.size)}
+                      </Badge>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="ml-2 h-8 w-8"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        if (fileInputRef.current) fileInputRef.current.value = "";
+                      }}
+                      aria-label="Remove file"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Drag and drop a file here, or{" "}
+                      <button
+                        type="button"
+                        className="text-primary underline underline-offset-2 hover:text-primary/80"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        browse
+                      </button>
+                    </p>
+                    <p className="text-xs text-muted-foreground/70">
+                      Supported: VTT, DOCX, DOC, PDF, Markdown (max 10 MB)
+                    </p>
+                  </>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={ACCEPTED_FILE_TYPES}
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  aria-label="Upload transcript file"
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
 
           <div className="flex items-center gap-2">
-            <Button onClick={handleProcess} disabled={loading || !transcript.trim()} size="lg">
+            <Button onClick={handleProcess} disabled={isProcessDisabled} size="lg">
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -211,6 +330,9 @@ export default function ProcessPage() {
                   <Badge variant={result.tier === "sensitive" ? "destructive" : "secondary"}>
                     {result.tier}
                   </Badge>
+                  {result.source_format && (
+                    <Badge variant="outline">{result.source_format.toUpperCase()}</Badge>
+                  )}
                 </div>
                 <CardDescription className="mt-1">{result.insights.summary}</CardDescription>
               </div>
